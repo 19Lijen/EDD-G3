@@ -9,9 +9,9 @@ typedef struct {
     int year;
     char plate[10];
     char color[50];
-    char type; // Corregido: tipo es un solo caracter
+    char type;
     float price;
-    char state; // Corregido: estado es un solo caracter
+    char state;
 } Vehicle;
 
 
