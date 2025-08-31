@@ -23,7 +23,6 @@ int countNodes(Node* head);
 int main() {
     Node* head = NULL;
     menu(&head);
-    // Free memory before exiting
     while (head) {
         Node* temp = head;
         head = head->next;
