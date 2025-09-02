@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
+#include <stdbool.h>
 
 // Node definition
 typedef struct Node {
     int id;
-    char name[50];
-    struct Node* next;
+    char name[30];
+    struct Node *next;
 } Node;
 
 // Function prototypes
@@ -23,6 +23,7 @@ int countNodes(Node* head);
 int main() {
     Node* head = NULL;
     menu(&head);
+    // Free memory before exiting
     while (head) {
         Node* temp = head;
         head = head->next;
@@ -32,8 +33,9 @@ int main() {
 }
 
 void menu(Node** head) {
-    int option, id, pos, search_id;
-    char name[50];
+    int option, pos, id, search_id;
+    char name[30];
+
     do {
         printf("\n----- MENU -----\n");
         printf("1. Insertar nodo en posicion\n");
@@ -53,7 +55,7 @@ void menu(Node** head) {
                 printf("ID: ");
                 scanf("%d", &id);
                 printf("Nombre: ");
-                scanf("%49s", name);
+                scanf("%29s", name);
                 *head = insertAtPosition(*head, pos, id, name);
                 break;
             case 2:
@@ -62,7 +64,7 @@ void menu(Node** head) {
                 printf("ID nuevo nodo: ");
                 scanf("%d", &id);
                 printf("Nombre: ");
-                scanf("%49s", name);
+                scanf("%29s", name);
                 *head = insertAfterID(*head, search_id, id, name);
                 break;
             case 3:
@@ -79,7 +81,7 @@ void menu(Node** head) {
                 printf("ID nuevo nodo: ");
                 scanf("%d", &id);
                 printf("Nombre: ");
-                scanf("%49s", name);
+                scanf("%29s", name);
                 *head = insertAtEnd(*head, id, name);
                 break;
             case 6:
@@ -95,36 +97,35 @@ void menu(Node** head) {
     } while (option != 7);
 }
 
-// Function to count elements
-int countNodes(Node* head) {
-    int count = 0;
-    while (head) {
-        count++;
-        head = head->next;
-    }
-    return count;
-}
-
-// Insert node at a specified position
+// Insert node at a specific position
 Node* insertAtPosition(Node* head, int pos, int id, char* name) {
-    int i = 0;
     Node *newNode = malloc(sizeof(Node));
     if (!newNode) {
         printf("Error: No se pudo asignar memoria.\n");
         return head;
     }
     newNode->id = id;
-    strncpy(newNode->name, name, 49);
-    newNode->name[49] = '\0';
+    strncpy(newNode->name, name, 29);
+    newNode->name[29] = '\0';
 
-    if (pos == 0 || !head) {
+    if (pos == 0) {
         newNode->next = head;
         return newNode;
     }
-    Node* current = head;
-    while (i < pos - 1 && current->next) {
+
+    Node *current = head;
+    int i = 0;
+    while (i < pos - 1 && current != NULL) {
         current = current->next;
         i++;
+    }
+
+    if (current == NULL) {
+        printf("Posicion fuera de rango. El nodo se insertara al final.\n");
+        current = head;
+        while(current->next != NULL) {
+            current = current->next;
+        }
     }
     newNode->next = current->next;
     current->next = newNode;
@@ -133,107 +134,128 @@ Node* insertAtPosition(Node* head, int pos, int id, char* name) {
 
 // Insert a node after a specific ID
 Node* insertAfterID(Node* head, int search_id, int id, char* name) {
-    Node* current = head;
-    while (current && current->id != search_id) {
+    Node *current = head;
+    while (current != NULL && current->id != search_id) {
         current = current->next;
     }
-    if (!current) {
+
+    if (current == NULL) {
         printf("ID no encontrado.\n");
         return head;
     }
-    Node* newNode = malloc(sizeof(Node));
+
+    Node *newNode = malloc(sizeof(Node));
     if (!newNode) {
         printf("Error: No se pudo asignar memoria.\n");
         return head;
     }
     newNode->id = id;
-    strncpy(newNode->name, name, 49);
-    newNode->name[49] = '\0';
+    strncpy(newNode->name, name, 29);
+    newNode->name[29] = '\0';
     newNode->next = current->next;
     current->next = newNode;
     return head;
 }
 
-// Delete a node at a specified position
+// Delete node at a specific position
 Node* deleteAtPosition(Node* head, int pos) {
-    if (!head) {
+    if (head == NULL) {
         printf("La lista ya esta vacia.\n");
         return head;
     }
-    Node *temp;
+    
+    Node *temp = head;
     if (pos == 0) {
-        temp = head;
         head = head->next;
         free(temp);
         printf("Nodo eliminado de la posicion 0.\n");
         return head;
     }
-    Node* current = head;
+
     int i = 0;
-    while (i < pos - 1 && current->next) {
-        current = current->next;
+    Node *prev = NULL;
+    while (i < pos && temp != NULL) {
+        prev = temp;
+        temp = temp->next;
         i++;
     }
-    if (!current->next) {
+
+    if (temp == NULL) {
         printf("Posicion invalida o fuera de rango.\n");
         return head;
     }
-    temp = current->next;
-    current->next = temp->next;
+
+    prev->next = temp->next;
     free(temp);
     printf("Nodo eliminado de la posicion %d.\n", pos);
     return head;
 }
 
-// Delete a node after a specific ID
+// Delete node after a specific ID
 Node* deleteAfterID(Node* head, int search_id) {
-    Node* current = head;
-    while (current && current->id != search_id) {
+    Node *current = head;
+    while (current != NULL && current->id != search_id) {
         current = current->next;
     }
-    if (!current || !current->next) {
+
+    if (current == NULL || current->next == NULL) {
         printf("ID no encontrado o no hay nodo para eliminar despues.\n");
         return head;
     }
-    Node* temp = current->next;
-    current->next = temp->next;
-    free(temp);
+
+    Node* toDelete = current->next;
+    current->next = toDelete->next;
+    free(toDelete);
     printf("Nodo despues de ID %d eliminado.\n", search_id);
     return head;
 }
 
-// Insert a node at the end
+// Insert node at the end
 Node* insertAtEnd(Node* head, int id, char* name) {
-    Node* newNode = malloc(sizeof(Node));
+    Node *newNode = malloc(sizeof(Node));
     if (!newNode) {
         printf("Error: No se pudo asignar memoria.\n");
         return head;
     }
     newNode->id = id;
-    strncpy(newNode->name, name, 49);
-    newNode->name[49] = '\0';
+    strncpy(newNode->name, name, 29);
+    newNode->name[29] = '\0';
     newNode->next = NULL;
-    if (!head) {
+
+    if (head == NULL) {
         return newNode;
+    } else {
+        Node *current = head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newNode;
     }
-    Node* current = head;
-    while (current->next) {
-        current = current->next;
-    }
-    current->next = newNode;
     return head;
 }
 
 // Print the list
 void printList(Node* head) {
-    if (!head) {
-        printf("Lista vacia\n");
+    if (head == NULL) {
+        printf("Lista vacia.\n");
         return;
     }
     printf("--- Contenido de la Lista ---\n");
-    while (head) {
-        printf("ID: %d, Nombre: %s\n", head->id, head->name);
-        head = head->next;
+    Node* current = head;
+    while (current != NULL) {
+        printf("ID: %d, Nombre: %s\n", current->id, current->name);
+        current = current->next;
     }
     printf("---------------------------\n");
+}
+
+// Count nodes
+int countNodes(Node* head) {
+    int count = 0;
+    Node* current = head;
+    while (current != NULL) {
+        count++;
+        current = current->next;
+    }
+    return count;
 }
